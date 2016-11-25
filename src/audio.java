@@ -1,6 +1,3 @@
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -10,21 +7,13 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamPanel;
-import com.github.sarxos.webcam.WebcamResolution;
 
 /**
  * This class creates GUI and implements methods for audio recording
  * @author Pavel Dusek
  */
-public class AudioRecorder extends JFrame implements ActionListener {
-    private static final int HOW_MANY_BUTTONS = 4;
+public class audio implements Runnable {
     private static final float SAMPLE_RATE = 8000.0f; //8kHz
     private static final int SAMPLE_SIZE_IN_BITS = 16;
     private static final int CHANNELS = 1;
@@ -34,67 +23,25 @@ public class AudioRecorder extends JFrame implements ActionListener {
     private AudioRecorderTask audioRecorderTask;
     private AudioFormat format = new AudioFormat( SAMPLE_RATE, SAMPLE_SIZE_IN_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
 
-    /** 
-     * This constructor creates JFrame based GUI with {@link JButton} buttons
-     */
-    public AudioRecorder() {
-        super("AudioRecorder");
-        Webcam webcam = Webcam.getDefault();
-		webcam.setViewSize(WebcamResolution.VGA.getSize());
-
-		WebcamPanel panel = new WebcamPanel(webcam);
-		panel.setFPSDisplayed(false);
-		panel.setDisplayDebugInfo(true);
-		panel.setImageSizeDisplayed(true);
-		panel.setMirrored(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(2,HOW_MANY_BUTTONS));
+    
+    public static void main(String[] args) {
+        audio aud = new audio();
         
-
-        add(panel);
-        JButton play = makeButton("Play");
-        add(play);
-        JButton record = makeButton("Record");
-        add(record);
-        JButton stop = makeButton("Stop");
-        add(stop);
-       
-        try {
-        	Thread.sleep(5000);
+    }
+    
+    public void run() {
+    	try {
         	System.out.println("RECORDING");
         	record();
         	Thread.sleep(5000);
-        	record();
             System.out.println("Stopping");
-        	stop();
-            System.out.println("RECORDING");
-        	play();
+            stop();
+        	Thread.sleep(2000);
+            System.out.println("PLAYING");
+            play();
+            System.out.println("finish audio");
         } catch (InterruptedException e) {
         	return;
-        }
-    }
-    
-    private JButton makeButton(String name) {
-        JButton button = new JButton(name);
-        button.addActionListener(this);
-        button.setActionCommand(name);
-        return button;
-    }
-    
-    public static void main(String[] args) {
-        AudioRecorder audioRecorder = new AudioRecorder();
-        audioRecorder.setSize(500,100);
-        audioRecorder.setVisible(true);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent ae) {
-        if (ae.getActionCommand().equals("Play")) {
-            play();
-        } else if (ae.getActionCommand().equals("Stop")) {
-            stop();
-        } else if (ae.getActionCommand().equals("Record")) {
-            record();
         }
     }
 
@@ -119,7 +66,6 @@ public class AudioRecorder extends JFrame implements ActionListener {
             speaker.close();
         } catch (Exception excp) {
             excp.printStackTrace();
-            JOptionPane.showMessageDialog(this, excp.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
         }
         
     }
@@ -127,6 +73,10 @@ public class AudioRecorder extends JFrame implements ActionListener {
     private void stop() {
         audioRecorderTask.cancel(true);
         audioRecorderTask = null;
+    }
+
+    private void record() {
+        (audioRecorderTask = new AudioRecorderTask()).execute();
     }
 
     private class AudioRecorderTask extends SwingWorker<Void,byte[]> {
@@ -158,11 +108,5 @@ public class AudioRecorder extends JFrame implements ActionListener {
             }
             return null;
         }
-    }
-    /*
-     * Method that reads data from the microphone port.
-     */
-    private void record() {
-        (audioRecorderTask = new AudioRecorderTask()).execute();
     }
 }

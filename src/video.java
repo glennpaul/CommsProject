@@ -12,52 +12,9 @@ import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
 
 
-public class recordShow {
-
-	private static final class PlayerPanel extends JPanel {
-
-		private static final long serialVersionUID = 1L;
-
-		private final Vector<BufferedImage> images;
-		private final Dimension size;
-		private int offset = 0;
-
-		public PlayerPanel(Vector<BufferedImage> images) {
-			super();
-			this.images = images;
-			this.size = new Dimension(images.get(0).getWidth(), images.get(0).getHeight());
-			setPreferredSize(size);
-		}
-
-		public void play() {
-			Thread t = new Thread() {
-
-				@Override
-				public void run() {
-					do {
-						repaint();
-						try {
-							Thread.sleep(75);
-						} catch (InterruptedException e) {
-							return;
-						}
-					} while (++offset < images.size());
-				}
-			};
-			t.setDaemon(true);
-			t.start();
-		}
-
-		@Override
-		protected void paintComponent(Graphics g) {
-			g.setColor(Color.BLACK);
-			g.fillRect(0, 0, getWidth(), getHeight());
-			g.drawImage(images.get(offset), 0, 0, null);
-		}
-	}
-
-	public static void main(String[] args) {
-
+public class video implements Runnable {
+	
+	public void run() {
 		Webcam w = Webcam.getDefault();
 		w.setViewSize(WebcamResolution.VGA.getSize());
 
@@ -104,5 +61,54 @@ public class recordShow {
 		} catch (InterruptedException e) {
 			return;
 		}
+
+        System.out.println("finish video");
+		
+	}
+
+	private static final class PlayerPanel extends JPanel {
+
+		private static final long serialVersionUID = 1L;
+
+		private final Vector<BufferedImage> images;
+		private final Dimension size;
+		private int offset = 0;
+
+		public PlayerPanel(Vector<BufferedImage> images) {
+			super();
+			this.images = images;
+			this.size = new Dimension(images.get(0).getWidth(), images.get(0).getHeight());
+			setPreferredSize(size);
+		}
+
+		public void play() {
+			Thread t = new Thread() {
+
+				@Override
+				public void run() {
+					do {
+						repaint();
+						try {
+							Thread.sleep(75);
+						} catch (InterruptedException e) {
+							return;
+						}
+					} while (++offset < images.size());
+				}
+			};
+			t.setDaemon(true);
+			t.start();
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, getWidth(), getHeight());
+			g.drawImage(images.get(offset), 0, 0, null);
+		}
+	}
+
+	public static void main(String[] args) {
+        video vid = new video();
 	}
 }
