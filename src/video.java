@@ -1,9 +1,13 @@
 import java.awt.Color;
+
+import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -13,6 +17,8 @@ import com.github.sarxos.webcam.WebcamResolution;
 
 
 public class video implements Runnable {
+	
+	private boolean recorded = false;
 	
 	public void run() {
 		Webcam w = Webcam.getDefault();
@@ -43,6 +49,8 @@ public class video implements Runnable {
 				return;
 			}
 		}
+		
+		recorded = true;
 
 		System.out.println("play");
 
@@ -55,6 +63,13 @@ public class video implements Runnable {
 		f.setVisible(true);
 
 		panel2.play();
+
+		// save image to PNG file
+		try {
+			ImageIO.write(images.elementAt(1), "PNG", new File("try.png"));
+		} catch (IOException e) {
+			
+		}
 
 		try {
 			Thread.sleep(100 * images.size());
@@ -106,6 +121,10 @@ public class video implements Runnable {
 			g.fillRect(0, 0, getWidth(), getHeight());
 			g.drawImage(images.get(offset), 0, 0, null);
 		}
+	}
+	
+	public boolean getRecordedVideo() {
+		return recorded;
 	}
 
 	public static void main(String[] args) {
